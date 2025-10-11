@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
+codex/implement-task-management-integration-feature
+    "moduleResolution": "Node",
+
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+main
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
