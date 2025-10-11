@@ -8,5 +8,14 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
     css: true
+codex/implement-task-management-integration-feature
+    environment: 'jsdom',
+    setupFiles: './vitest.setup.ts',
+    globals: true,
+    css: true
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './vitest.setup.ts'
+main
   }
 });
