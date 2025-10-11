@@ -1,20 +1,38 @@
 import type { ConflictResolution, SyncDelta, SyncEntity, SyncEntityType } from "../types/sync";
 
+// Define type guards for note and task entities
+interface NoteEntity extends SyncEntity {
+  tags: string[];
+  content: string;
+}
+
+interface TaskEntity extends SyncEntity {
+  completed: boolean;
+}
+
+function isNoteEntity(entity: SyncEntity): entity is NoteEntity {
+  return 'tags' in entity && Array.isArray((entity as any).tags) && 'content' in entity && typeof (entity as any).content === 'string';
+}
+
+function isTaskEntity(entity: SyncEntity): entity is TaskEntity {
+  return 'completed' in entity && typeof (entity as any).completed === 'boolean';
+}
+
 const mergeEntities = (type: SyncEntityType, local: SyncEntity, remote: SyncEntity): SyncEntity => {
-  if (type === "note") {
-    const mergedTags = Array.from(new Set([...(local as any).tags, ...(remote as any).tags]));
+  if (type === "note" && isNoteEntity(local) && isNoteEntity(remote)) {
+    const mergedTags = Array.from(new Set([...local.tags, ...remote.tags]));
     return {
       ...(remote.updatedAt > local.updatedAt ? remote : local),
       tags: mergedTags,
-      content: `${(local as any).content}\n${(remote as any).content}`.trim()
-    } as SyncEntity;
+      content: `${local.content}\n${remote.content}`.trim()
+    } as NoteEntity;
   }
-  if (type === "task") {
+  if (type === "task" && isTaskEntity(local) && isTaskEntity(remote)) {
     return {
       ...local,
       ...remote,
-      completed: (local as any).completed || (remote as any).completed
-    } as SyncEntity;
+      completed: local.completed || remote.completed
+    } as TaskEntity;
   }
   return remote.updatedAt > local.updatedAt ? remote : local;
 };

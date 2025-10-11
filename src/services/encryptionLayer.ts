@@ -1,25 +1,32 @@
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { randomBytes, createCipheriv, createDecipheriv, pbkdf2 } from "crypto";
+import { promisify } from "util";
 import type { EncryptionLayer, EncryptedPayload } from "../types/sync";
 
 const IV_LENGTH = 16;
 const KEY_LENGTH = 32;
+const PBKDF2_ITERATIONS = 100000;
+const SALT_LENGTH = 16;
 
-const getKey = async (secret?: string) => {
+const pbkdf2Async = promisify(pbkdf2);
+
+const getKey = async (secret?: string, salt?: Buffer): Promise<{ key: Buffer; salt: Buffer }> => {
   if (secret) {
-    return Buffer.from(secret.padEnd(KEY_LENGTH * 2, "0").slice(0, KEY_LENGTH * 2), "hex");
+    const keySalt = salt || randomBytes(SALT_LENGTH);
+    const key = await pbkdf2Async(secret, keySalt, PBKDF2_ITERATIONS, KEY_LENGTH, "sha256");
+    return { key: key as Buffer, salt: keySalt };
   }
-  return randomBytes(KEY_LENGTH);
+  return { key: randomBytes(KEY_LENGTH), salt: randomBytes(SALT_LENGTH) };
 };
 
 export class AesEncryptionLayer implements EncryptionLayer {
-  private keyPromise: Promise<Buffer>;
+  private keyPromise: Promise<{ key: Buffer; salt: Buffer }>;
 
   constructor(secret?: string) {
     this.keyPromise = getKey(secret);
   }
 
   async encrypt<T>(payload: T): Promise<EncryptedPayload> {
-    const key = await this.keyPromise;
+    const { key } = await this.keyPromise;
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv("aes-256-gcm", key, iv);
     const json = JSON.stringify(payload);
@@ -33,7 +40,7 @@ export class AesEncryptionLayer implements EncryptionLayer {
   }
 
   async decrypt<T>(payload: EncryptedPayload): Promise<T> {
-    const key = await this.keyPromise;
+    const { key } = await this.keyPromise;
     const iv = Buffer.from(payload.iv, "base64");
     const encryptedText = Buffer.from(payload.data, "base64");
     const decipher = createDecipheriv("aes-256-gcm", key, iv);
