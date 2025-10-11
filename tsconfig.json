@@ -14,4 +14,44 @@
   },
   "include": ["src", "tests", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "skipLibCheck": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Bundler",
+codex/implement-task-management-integration-feature
+    "baseUrl": ".",
+main
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "allowJs": false,
+codex/implement-task-management-integration-feature
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "skipLibCheck": false,
+    "esModuleInterop": false,
+main
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+codex/implement-task-management-integration-feature
+    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
+main
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["vitest", "vite/client"]
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
