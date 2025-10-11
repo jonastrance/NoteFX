@@ -2,6 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "module": "ESNext",
+    "moduleResolution": "Bundler",
 codex/implement-task-management-integration-feature
     "moduleResolution": "Node",
 
