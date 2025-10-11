@@ -1,20 +1,12 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode, useMemo } from 'react';
-import { AppShell } from '@/components/AppShell';
-
-const queryClient = new QueryClient();
-
-const Providers = ({ children }: { children: ReactNode }) => {
-  const client = useMemo(() => queryClient, []);
-
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-};
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { NotesLayout } from './pages/NotesLayout';
 
 const App = () => {
   return (
-    <Providers>
-      <AppShell />
-    </Providers>
+    <Routes>
+      <Route path="/" element={<Navigate to="/notes" replace />} />
+      <Route path="/notes/*" element={<NotesLayout />} />
+    </Routes>
   );
 };
 

@@ -1,29 +1,22 @@
+import typography from '@tailwindcss/typography';
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{ts,tsx,jsx,js}'
-  ],
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
-      },
       colors: {
         primary: {
-          DEFAULT: '#6366F1',
-          foreground: '#FFFFFF'
+          DEFAULT: '#6366f1',
+          foreground: '#ffffff'
         },
-        secondary: {
-          DEFAULT: '#0EA5E9',
-          foreground: '#FFFFFF'
-        },
-        accent: {
-          DEFAULT: '#22C55E',
-          foreground: '#052e16'
+        surface: {
+          DEFAULT: '#111827',
+          muted: '#1f2937',
+          border: '#374151'
         }
       }
     }
   },
-  plugins: []
+  plugins: [typography]
 };
