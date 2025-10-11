@@ -1,3 +1,4 @@
+codex/implement-task-management-integration-feature
 import { useMemo, useState } from 'react';
 import { TaskEditor } from './components/TaskEditor';
 import { TasksList } from './components/TasksList';
@@ -152,3 +153,18 @@ export default function App() {
     </div>
   );
 }
+
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { NotesLayout } from './pages/NotesLayout';
+
+const App = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/notes" replace />} />
+      <Route path="/notes/*" element={<NotesLayout />} />
+    </Routes>
+  );
+};
+
+export default App;
+main
