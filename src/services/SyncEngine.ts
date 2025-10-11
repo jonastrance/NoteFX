@@ -40,7 +40,6 @@ export class SyncEngine {
     queueSize: 0,
     state: "idle"
   };
-
   private listeners = new Set<SyncListener>();
   private queue: SyncDelta[] = [];
   private syncToken?: string;
@@ -160,7 +159,7 @@ export class SyncEngine {
       return;
     }
 
-    if (!this.queue.length && this.metadata.state === "idle") {
+    if (this.queue.length && this.metadata.state === "idle") {
       this.setState("syncing");
     }
 
@@ -191,18 +190,14 @@ export class SyncEngine {
     const changes = [...this.queue];
     const payload = await this.encryptPayload(changes);
     const response = await this.options.remoteAdapter.pushChanges(payload as any);
-
     if (!response.success) {
       throw new Error("Failed to push changes");
     }
-
     this.record("info", "Pushed changes", { count: changes.length });
-
     if (response.conflicts?.length) {
       const resolutions = this.resolveConflicts(response.conflicts);
       await this.applyResolutions(resolutions);
     }
-
     this.syncToken = response.nextToken ?? this.syncToken;
     this.queue = [];
     this.metadata.queueSize = 0;
