@@ -61,4 +61,15 @@ export const calculateStreak = (dates: Date[]): { current: number; longest: numb
 export const estimateReadingTime = (wordCount: number, wordsPerMinute = 200): number => {
   if (wordCount <= 0) return 0;
   return Math.ceil(wordCount / wordsPerMinute);
+export const formatDate = (date: string | number | Date) => {
+  const value = typeof date === 'string' ? new Date(date) : new Date(date);
+
+  if (Number.isNaN(value.getTime())) {
+    return 'Invalid date';
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(value);
 };
