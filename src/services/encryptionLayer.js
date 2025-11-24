@@ -1,0 +1,55 @@
+import { randomBytes, createCipheriv, createDecipheriv, pbkdf2 } from "crypto";
+import { promisify } from "util";
+const IV_LENGTH = 16;
+const KEY_LENGTH = 32;
+const PBKDF2_ITERATIONS = 100000;
+const SALT_LENGTH = 16;
+const pbkdf2Async = promisify(pbkdf2);
+const getKey = async (secret, salt) => {
+    if (secret) {
+        const keySalt = salt || randomBytes(SALT_LENGTH);
+        const key = await pbkdf2Async(secret, keySalt, PBKDF2_ITERATIONS, KEY_LENGTH, "sha256");
+        return { key: key, salt: keySalt };
+    }
+    return { key: randomBytes(KEY_LENGTH), salt: randomBytes(SALT_LENGTH) };
+};
+export class AesEncryptionLayer {
+    constructor(secret) {
+        this.keyPromise = getKey(secret);
+    }
+    async encrypt(payload) {
+        const { key } = await this.keyPromise;
+        const iv = randomBytes(IV_LENGTH);
+        const cipher = createCipheriv("aes-256-gcm", key, iv);
+        const json = JSON.stringify(payload);
+        const encrypted = Buffer.concat([cipher.update(json, "utf8"), cipher.final()]);
+        const authTag = cipher.getAuthTag();
+        return {
+            iv: iv.toString("base64"),
+            data: encrypted.toString("base64"),
+            authTag: authTag.toString("base64")
+        };
+    }
+    async decrypt(payload) {
+        const { key } = await this.keyPromise;
+        const iv = Buffer.from(payload.iv, "base64");
+        const encryptedText = Buffer.from(payload.data, "base64");
+        const decipher = createDecipheriv("aes-256-gcm", key, iv);
+        if (payload.authTag) {
+            decipher.setAuthTag(Buffer.from(payload.authTag, "base64"));
+        }
+        const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
+        return JSON.parse(decrypted.toString("utf8"));
+    }
+}
+export class PassthroughEncryptionLayer {
+    async encrypt(payload) {
+        return {
+            iv: "",
+            data: Buffer.from(JSON.stringify(payload)).toString("base64")
+        };
+    }
+    async decrypt(payload) {
+        return JSON.parse(Buffer.from(payload.data, "base64").toString("utf8"));
+    }
+}

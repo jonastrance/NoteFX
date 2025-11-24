@@ -1,0 +1,17 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useEffect, useState } from "react";
+import { useSyncContext } from "../modules/SyncContext";
+const toMinutes = (ms) => Math.round(ms / 60000);
+const toMs = (minutes) => minutes * 60000;
+export const SyncSettings = () => {
+    const { metadata, updatePreferences, engine } = useSyncContext();
+    const [preferences, setPreferences] = useState(engine.getPreferences());
+    useEffect(() => {
+        setPreferences(engine.getPreferences());
+    }, [engine, metadata.state, metadata.lastSuccessfulSync]);
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        updatePreferences(preferences);
+    };
+    return (_jsxs("form", { onSubmit: handleSubmit, className: "space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm", "data-testid": "sync-settings", children: [_jsxs("div", { children: [_jsx("h2", { className: "text-lg font-semibold text-slate-900", children: "Sync Preferences" }), _jsx("p", { className: "text-sm text-slate-600", children: "Customize how and when your data synchronizes across devices." })] }), _jsxs("label", { className: "block text-sm font-medium text-slate-700", children: ["Auto-sync interval (minutes)", _jsx("input", { type: "number", min: 1, value: toMinutes(preferences.autoSyncIntervalMs), onChange: (event) => setPreferences((prev) => ({ ...prev, autoSyncIntervalMs: toMs(Number(event.target.value)) })), className: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400" })] }), _jsxs("label", { className: "flex items-center gap-2 text-sm font-medium text-slate-700", children: [_jsx("input", { type: "checkbox", checked: preferences.enableBackgroundSync, onChange: (event) => setPreferences((prev) => ({ ...prev, enableBackgroundSync: event.target.checked })), className: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" }), "Enable background sync"] }), _jsxs("label", { className: "flex items-center gap-2 text-sm font-medium text-slate-700", children: [_jsx("input", { type: "checkbox", checked: preferences.encryptionEnabled, onChange: (event) => setPreferences((prev) => ({ ...prev, encryptionEnabled: event.target.checked })), className: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" }), "Encrypt data in transit"] }), _jsxs("label", { className: "block text-sm font-medium text-slate-700", children: ["Conflict resolution strategy", _jsxs("select", { value: preferences.resolveConflictsWith, onChange: (event) => setPreferences((prev) => ({ ...prev, resolveConflictsWith: event.target.value })), className: "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400", children: [_jsx("option", { value: "prompt", children: "Prompt me when conflicts occur" }), _jsx("option", { value: "local", children: "Prefer this device's changes" }), _jsx("option", { value: "remote", children: "Prefer remote changes" })] })] }), _jsxs("div", { className: "flex items-center justify-between", children: [_jsx("button", { type: "submit", className: "rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500", children: "Save preferences" }), _jsxs("p", { className: "text-xs text-slate-500", children: ["Last sync: ", metadata.lastSuccessfulSync ? new Date(metadata.lastSuccessfulSync).toLocaleString() : "Never"] })] })] }));
+};

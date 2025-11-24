@@ -4,7 +4,8 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useReducer
+  useReducer,
+  useRef
 } from 'react';
 import { nanoid } from 'nanoid';
 import type { CreateTagInput, UpdateTagInput } from '../lib/tagValidation';
@@ -184,8 +185,22 @@ export const TagStoreProvider = ({ children }: PropsWithChildren) => {
     return loadState();
   });
 
+  const persistTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
   useEffect(() => {
-    persistState(state);
+    // Debounce localStorage writes to avoid excessive I/O
+    if (persistTimeoutRef.current) {
+      clearTimeout(persistTimeoutRef.current);
+    }
+    persistTimeoutRef.current = setTimeout(() => {
+      persistState(state);
+    }, 500); // Write after 500ms of inactivity
+
+    return () => {
+      if (persistTimeoutRef.current) {
+        clearTimeout(persistTimeoutRef.current);
+      }
+    };
   }, [state]);
 
   const notes = useMemo(() => defaultNotes, []);

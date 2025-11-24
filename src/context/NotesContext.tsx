@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer } from 'react';
+import { createContext, ReactNode, useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { Note, NoteInput } from '../types/note';
 import { generateId } from '../lib/utils';
 import { noteInputSchema, noteSchema } from '../validation/noteSchema';
@@ -74,6 +74,11 @@ const writeToStorage = (notes: Note[]) => {
 
 export const NotesProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(notesReducer, initialState);
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     const storedNotes = readFromStorage();
@@ -103,7 +108,7 @@ export const NotesProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const updateNote = useCallback(async (id: string, changes: Partial<Note>) => {
-    const existing = state.notes.find((note) => note.id === id);
+    const existing = stateRef.current.notes.find((note) => note.id === id);
     if (!existing) return undefined;
     const updated: Note = {
       ...existing,
@@ -114,7 +119,7 @@ export const NotesProvider = ({ children }: { children: ReactNode }) => {
     const parsed = noteSchema.parse(updated);
     dispatch({ type: 'UPDATE', payload: parsed });
     return parsed;
-  }, [state.notes]);
+  }, []);
 
   const deleteNote = useCallback(async (id: string) => {
     dispatch({ type: 'DELETE', payload: { id } });

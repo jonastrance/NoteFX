@@ -29,24 +29,26 @@ export const useAnalytics = (data: AnalyticsData, options: UseAnalyticsOptions) 
 
   const previousRange = useMemo(() => getPreviousRange(dateRange.start, dateRange.end), [dateRange.start, dateRange.end]);
 
-  const filterByRange = (start: Date, end: Date) => {
-    if (!analyticsEnabled) {
-      return {
-        notes: [] as typeof parsed.notes,
-        tasks: [] as typeof parsed.tasks,
-        focusSessions: [] as typeof parsed.focusSessions
-      };
-    }
+  const filterByRange = useMemo(() => {
+    return (start: Date, end: Date) => {
+      if (!analyticsEnabled) {
+        return {
+          notes: [] as typeof parsed.notes,
+          tasks: [] as typeof parsed.tasks,
+          focusSessions: [] as typeof parsed.focusSessions
+        };
+      }
 
-    const notes = parsed.notes.filter((note) => isWithinRange(note.createdAt, start, end));
-    const tasks = parsed.tasks.filter((task) =>
-      isWithinRange(task.createdAt, start, end) ||
-      (task.completed && task.completedAt ? isWithinRange(task.completedAt, start, end) : false)
-    );
-    const focusSessions = parsed.focusSessions.filter((session) => isWithinRange(session.startedAt, start, end));
+      const notes = parsed.notes.filter((note) => isWithinRange(note.createdAt, start, end));
+      const tasks = parsed.tasks.filter((task) =>
+        isWithinRange(task.createdAt, start, end) ||
+        (task.completed && task.completedAt ? isWithinRange(task.completedAt, start, end) : false)
+      );
+      const focusSessions = parsed.focusSessions.filter((session) => isWithinRange(session.startedAt, start, end));
 
-    return { notes, tasks, focusSessions };
-  };
+      return { notes, tasks, focusSessions };
+    };
+  }, [analyticsEnabled, parsed]);
 
   const currentRangeData = useMemo(
     () => filterByRange(dateRange.start, dateRange.end),
@@ -100,7 +102,18 @@ export const useAnalytics = (data: AnalyticsData, options: UseAnalyticsOptions) 
   );
 
   const comparison = useMemo(
-    () => buildComparisonMetrics(currentRangeData, previousRangeData),
+    () => buildComparisonMetrics(
+      {
+        notes: currentRangeData.notes,
+        tasks: currentRangeData.tasks,
+        sessions: currentRangeData.focusSessions
+      },
+      {
+        notes: previousRangeData.notes,
+        tasks: previousRangeData.tasks,
+        sessions: previousRangeData.focusSessions
+      }
+    ),
     [currentRangeData, previousRangeData]
   );
 

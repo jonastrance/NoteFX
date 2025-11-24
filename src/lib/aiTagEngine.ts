@@ -62,6 +62,20 @@ const buildKnowledgeGraph = (tags: Tag[]) => {
   return map;
 };
 
+// Cache for knowledge graph to avoid rebuilding on every call
+let knowledgeGraphCache: { tags: Tag[]; graph: Map<string, Tag> } | null = null;
+
+const getCachedKnowledgeGraph = (tags: Tag[]) => {
+  // Check if cache is valid (same tags array reference)
+  if (knowledgeGraphCache && knowledgeGraphCache.tags === tags) {
+    return knowledgeGraphCache.graph;
+  }
+  // Rebuild cache
+  const graph = buildKnowledgeGraph(tags);
+  knowledgeGraphCache = { tags, graph };
+  return graph;
+};
+
 const findOrCreateTag = (label: string, tags: Tag[]): Tag | undefined => {
   const normalisedLabel = normalise(label);
   return tags.find((tag) => normalise(tag.name) === normalisedLabel);
