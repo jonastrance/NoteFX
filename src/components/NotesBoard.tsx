@@ -5,6 +5,7 @@ import { useTags } from '../hooks/useTags';
 import { useApplyTag } from '../hooks/useApplyTag';
 import { TagBadge } from './TagBadge';
 import { cn } from '../utils/cn';
+import { dateFormatCache } from '../utils/dateFormatCache';
 
 export const NotesBoard = () => {
   const { notes, selectedNoteId, selectNote, updateNoteContent } = useNotesContext();
@@ -53,7 +54,7 @@ export const NotesBoard = () => {
               >
                 <p className="font-semibold">{note.title}</p>
                 <p className="text-xs text-slate-400">
-                  {new Date(note.updatedAt).toLocaleDateString()}
+                  {dateFormatCache.formatDate(note.updatedAt)}
                 </p>
               </button>
             </li>
@@ -67,7 +68,7 @@ export const NotesBoard = () => {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">{selectedNote.title}</h3>
                 <span className="text-xs uppercase tracking-widest text-slate-500">
-                  Last updated {new Date(selectedNote.updatedAt).toLocaleString()}
+                  Last updated {dateFormatCache.formatDateTime(selectedNote.updatedAt)}
                 </span>
               </div>
               <label className="block space-y-2">

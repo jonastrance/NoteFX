@@ -102,7 +102,18 @@ export const useAnalytics = (data: AnalyticsData, options: UseAnalyticsOptions) 
   );
 
   const comparison = useMemo(
-    () => buildComparisonMetrics(currentRangeData, previousRangeData),
+    () => buildComparisonMetrics(
+      {
+        notes: currentRangeData.notes,
+        tasks: currentRangeData.tasks,
+        sessions: currentRangeData.focusSessions
+      },
+      {
+        notes: previousRangeData.notes,
+        tasks: previousRangeData.tasks,
+        sessions: previousRangeData.focusSessions
+      }
+    ),
     [currentRangeData, previousRangeData]
   );
 

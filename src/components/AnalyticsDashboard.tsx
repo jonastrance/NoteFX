@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -31,7 +31,7 @@ interface AnalyticsDashboardProps {
   data: AnalyticsData;
 }
 
-const InsightBadge: React.FC<{ insight: ProductivityInsight }> = ({ insight }) => {
+const InsightBadge = memo(({ insight }: { insight: ProductivityInsight }) => {
   const colorMap = {
     positive: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40',
     warning: 'bg-amber-500/10 text-amber-200 border-amber-500/40',
@@ -43,9 +43,88 @@ const InsightBadge: React.FC<{ insight: ProductivityInsight }> = ({ insight }) =
       <p className="text-sm text-slate-200/80 leading-relaxed">{insight.description}</p>
     </div>
   );
-};
+});
 
-const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ data }) => {
+InsightBadge.displayName = 'InsightBadge';
+
+// Memoize chart components for better performance
+const NoteFrequencyChart = memo(({ data }: { data: any[] }) => (
+  <div className="h-64">
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 12 }} />
+        <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} />
+        <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
+        <Bar dataKey="count" fill="#4F46E5" radius={[8, 8, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+));
+
+NoteFrequencyChart.displayName = 'NoteFrequencyChart';
+
+const TaskCompletionChart = memo(({ completed, pending }: { completed: number; pending: number }) => (
+  <div className="h-64">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie dataKey="value" data={[{ name: 'Completed', value: completed }, { name: 'Pending', value: pending }]} innerRadius={60} outerRadius={80} paddingAngle={5}>
+          {[0, 1].map((index) => (
+            <Cell key={index} fill={index === 0 ? '#22D3EE' : '#F97316'} />
+          ))}
+        </Pie>
+        <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
+        <Legend wrapperStyle={{ color: '#e2e8f0' }} />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+));
+
+TaskCompletionChart.displayName = 'TaskCompletionChart';
+
+const FocusTrendChart = memo(({ data }: { data: any[] }) => (
+  <div className="h-64">
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.8} />
+            <stop offset="95%" stopColor="#22D3EE" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis dataKey="period" stroke="#94a3b8" tick={{ fontSize: 12 }} />
+        <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} />
+        <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
+        <Area type="monotone" dataKey="focusMinutes" stroke="#22D3EE" fill="url(#focusGradient)" strokeWidth={2} />
+      </AreaChart>
+    </ResponsiveContainer>
+  </div>
+));
+
+FocusTrendChart.displayName = 'FocusTrendChart';
+
+const TagUsageChart = memo(({ data }: { data: any[] }) => (
+  <div className="h-64">
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data.slice(0, 6)} layout="vertical">
+        <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+        <XAxis type="number" stroke="#94a3b8" tick={{ fontSize: 12 }} />
+        <YAxis dataKey="tag" type="category" stroke="#94a3b8" tick={{ fontSize: 12 }} width={100} />
+        <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
+        <Bar dataKey="count" radius={[0, 8, 8, 0]}>
+          {data.slice(0, 6).map((_, index) => (
+            <Cell key={index} fill={['#4F46E5', '#22D3EE', '#F97316', '#14B8A6', '#8B5CF6'][index % 5]} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+));
+
+TagUsageChart.displayName = 'TagUsageChart';
+
+const AnalyticsDashboard = memo(({ data }: AnalyticsDashboardProps) => {
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [dateRange, setDateRange] = useState(() => {
     const preset: DateRangePreset = '30d';
@@ -258,74 +337,22 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ data }) => {
           <section className="grid gap-4 lg:grid-cols-3">
             <div className="card lg:col-span-2">
               <h3 className="card-heading">Note Creation Frequency</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={noteFrequency}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                    <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
-                    <Bar dataKey="count" fill="#4F46E5" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <NoteFrequencyChart data={noteFrequency} />
             </div>
             <div className="card">
               <h3 className="card-heading">Task Completion Rate</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie dataKey="value" data={[{ name: 'Completed', value: taskMetrics.completed }, { name: 'Pending', value: taskMetrics.pending }]} innerRadius={60} outerRadius={80} paddingAngle={5}>
-                      {[0, 1].map((index) => (
-                        <Cell key={index} fill={index === 0 ? '#22D3EE' : '#F97316'} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
-                    <Legend wrapperStyle={{ color: '#e2e8f0' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              <TaskCompletionChart completed={taskMetrics.completed} pending={taskMetrics.pending} />
             </div>
           </section>
 
           <section className="grid gap-4 lg:grid-cols-3">
             <div className="card">
               <h3 className="card-heading">Focus Time Trend</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trendData}>
-                    <defs>
-                      <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#22D3EE" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                    <XAxis dataKey="period" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
-                    <Area type="monotone" dataKey="focusMinutes" stroke="#22D3EE" fill="url(#focusGradient)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              <FocusTrendChart data={trendData} />
             </div>
             <div className="card">
               <h3 className="card-heading">Tag Usage</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={tagUsage.slice(0, 6)} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                    <XAxis type="number" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                    <YAxis dataKey="tag" type="category" stroke="#94a3b8" tick={{ fontSize: 12 }} width={100} />
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', borderRadius: '0.75rem', border: '1px solid #1f2937' }} />
-                    <Bar dataKey="count" radius={[0, 8, 8, 0]}>
-                      {tagUsage.slice(0, 6).map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <TagUsageChart data={tagUsage} />
             </div>
             <div className="card">
               <h3 className="card-heading">Productivity Comparison</h3>
@@ -422,6 +449,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ data }) => {
       )}
     </div>
   );
-};
+});
+
+AnalyticsDashboard.displayName = 'AnalyticsDashboard';
 
 export default AnalyticsDashboard;
